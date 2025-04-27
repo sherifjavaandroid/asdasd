@@ -13,9 +13,23 @@ import 'anti_tampering_service.dart';
 import 'rate_limiter_service.dart';
 import 'obfuscation_service.dart';
 import 'nonce_generator_service.dart';
-import '../utils/secure_logger.dart';
+import '../utils/secure_logger.dart' hide SecurityCategory;
+import '../utils/secure_logger.dart' as logger_util;
 import '../utils/integrity_checker.dart';
 import '../utils/time_manager.dart';
+
+// تعريف SecurityCategory محلياً لتجنب التعارض
+enum SecurityCategory {
+  initialization,
+  security,
+  session,
+  encryption,
+  decryption,
+  integrity,
+  inputValidation,
+  pathValidation,
+  rateLimiting,
+}
 
 class SecurityManager {
   final EncryptionService _encryptionService;
@@ -28,7 +42,7 @@ class SecurityManager {
   final RateLimiterService _rateLimiterService;
   final ObfuscationService _obfuscationService;
   final NonceGeneratorService _nonceGeneratorService;
-  final SecureLogger _secureLogger;
+  final logger_util.SecureLogger _secureLogger;
   final IntegrityChecker _integrityChecker;
   final TimeManager _timeManager;
 
@@ -83,14 +97,14 @@ class SecurityManager {
       // تسجيل التهيئة الناجحة
       await _secureLogger.log(
         'Security Manager initialized successfully',
-        level: LogLevel.info,
-        category: SecurityCategory.initialization,
+        level: logger_util.LogLevel.info,
+        category: logger_util.SecurityCategory.initialization,
       );
     } catch (e) {
       await _secureLogger.log(
         'Security Manager initialization failed: $e',
-        level: LogLevel.critical,
-        category: SecurityCategory.initialization,
+        level: logger_util.LogLevel.critical,
+        category: logger_util.SecurityCategory.initialization,
       );
       rethrow;
     }
@@ -126,8 +140,8 @@ class SecurityManager {
     if (!await _rateLimiterService.checkRateLimit(path, method)) {
       await _secureLogger.log(
         'Rate limit exceeded for $method $path',
-        level: LogLevel.warning,
-        category: SecurityCategory.rateLimiting,
+        level: logger_util.LogLevel.warning,
+        category: logger_util.SecurityCategory.rateLimiting,
       );
       return false;
     }
@@ -136,8 +150,8 @@ class SecurityManager {
     if (!_validatePath(path)) {
       await _secureLogger.log(
         'Invalid path detected: $path',
-        level: LogLevel.warning,
-        category: SecurityCategory.pathValidation,
+        level: logger_util.LogLevel.warning,
+        category: logger_util.SecurityCategory.pathValidation,
       );
       return false;
     }
@@ -146,8 +160,8 @@ class SecurityManager {
     if (!_validateParams(params)) {
       await _secureLogger.log(
         'Invalid parameters detected',
-        level: LogLevel.warning,
-        category: SecurityCategory.inputValidation,
+        level: logger_util.LogLevel.warning,
+        category: logger_util.SecurityCategory.inputValidation,
       );
       return false;
     }
@@ -273,8 +287,8 @@ class SecurityManager {
     } catch (e) {
       await _secureLogger.log(
         'Security check failed: $e',
-        level: LogLevel.error,
-        category: SecurityCategory.security,
+        level: logger_util.LogLevel.error,
+        category: logger_util.SecurityCategory.security,
       );
     }
   }
@@ -301,8 +315,8 @@ class SecurityManager {
     try {
       await _secureLogger.log(
         'Session timeout occurred',
-        level: LogLevel.info,
-        category: SecurityCategory.session,
+        level: logger_util.LogLevel.info,
+        category: logger_util.SecurityCategory.session,
       );
 
       // مسح الرموز والبيانات الحساسة
@@ -318,8 +332,8 @@ class SecurityManager {
     } catch (e) {
       await _secureLogger.log(
         'Session timeout handling failed: $e',
-        level: LogLevel.error,
-        category: SecurityCategory.session,
+        level: logger_util.LogLevel.error,
+        category: logger_util.SecurityCategory.session,
       );
     }
   }
@@ -328,8 +342,8 @@ class SecurityManager {
     try {
       await _secureLogger.log(
         'Security violation detected: $reason',
-        level: LogLevel.critical,
-        category: SecurityCategory.security,
+        level: logger_util.LogLevel.critical,
+        category: logger_util.SecurityCategory.security,
       );
 
       // مسح جميع البيانات الحساسة
@@ -345,8 +359,8 @@ class SecurityManager {
     } catch (e) {
       await _secureLogger.log(
         'Security violation handling failed: $e',
-        level: LogLevel.critical,
-        category: SecurityCategory.security,
+        level: logger_util.LogLevel.critical,
+        category: logger_util.SecurityCategory.security,
       );
     }
   }
@@ -381,8 +395,8 @@ class SecurityManager {
     } catch (e) {
       await _secureLogger.log(
         'Failed to prepare secure request: $e',
-        level: LogLevel.error,
-        category: SecurityCategory.encryption,
+        level: logger_util.LogLevel.error,
+        category: logger_util.SecurityCategory.encryption,
       );
       rethrow;
     }
@@ -418,8 +432,8 @@ class SecurityManager {
     } catch (e) {
       await _secureLogger.log(
         'Failed to process secure response: $e',
-        level: LogLevel.error,
-        category: SecurityCategory.decryption,
+        level: logger_util.LogLevel.error,
+        category: logger_util.SecurityCategory.decryption,
       );
       rethrow;
     }
@@ -448,8 +462,8 @@ class SecurityManager {
     } catch (e) {
       await _secureLogger.log(
         'App integrity check failed: $e',
-        level: LogLevel.critical,
-        category: SecurityCategory.integrity,
+        level: logger_util.LogLevel.critical,
+        category: logger_util.SecurityCategory.integrity,
       );
       await _handleSecurityViolation('App integrity check exception');
     }
@@ -468,16 +482,4 @@ class SecurityException implements Exception {
 
   @override
   String toString() => 'SecurityException: $message';
-}
-
-enum SecurityCategory {
-  initialization,
-  security,
-  session,
-  encryption,
-  decryption,
-  integrity,
-  inputValidation,
-  pathValidation,
-  rateLimiting,
 }

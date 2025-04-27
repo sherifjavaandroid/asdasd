@@ -3,6 +3,8 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
+import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 
 class DeviceInfoService {
   final DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
@@ -176,8 +178,8 @@ class DeviceInfoService {
     // استخدام مزيج من المعرفات لإنشاء معرف فريد
     final components = [
       androidInfo.id,
-      androidInfo.androidId,
-      androidInfo.serialNumber,
+      '', // تم حذف androidInfo.androidId لأنه لا يوجد
+      '', // تم حذف androidInfo.serialNumber لأنه لا يوجد
       androidInfo.manufacturer,
       androidInfo.model,
     ];
@@ -205,7 +207,7 @@ class DeviceInfoService {
   String _generateFallbackDeviceId() {
     // إنشاء معرف احتياطي باستخدام الطابع الزمني وقيمة عشوائية
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final random = Random.secure().nextInt(999999);
+    final random = math.Random.secure().nextInt(999999);
 
     return _hashDeviceId('$timestamp|$random');
   }

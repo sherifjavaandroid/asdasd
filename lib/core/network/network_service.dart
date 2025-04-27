@@ -1,13 +1,13 @@
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import '../security/security_manager.dart';
-import '../utils/secure_logger.dart';
+import '../utils/secure_logger.dart' as logger_util;
 import 'dio_client.dart';
+import 'package:path/path.dart' as path;
 
 class NetworkService {
   final DioClient _dioClient;
   final SecurityManager _securityManager;
-  final SecureLogger _logger;
+  final logger_util.SecureLogger _logger;
 
   NetworkService(this._dioClient, this._securityManager, this._logger);
 
@@ -58,8 +58,8 @@ class NetworkService {
     } catch (e) {
       _logger.log(
         'Network GET request failed: $e',
-        level: LogLevel.error,
-        category: SecurityCategory.security,
+        level: logger_util.LogLevel.error,
+        category: logger_util.SecurityCategory.security,
       );
       rethrow;
     }
@@ -117,8 +117,8 @@ class NetworkService {
     } catch (e) {
       _logger.log(
         'Network POST request failed: $e',
-        level: LogLevel.error,
-        category: SecurityCategory.security,
+        level: logger_util.LogLevel.error,
+        category: logger_util.SecurityCategory.security,
       );
       rethrow;
     }
@@ -176,8 +176,8 @@ class NetworkService {
     } catch (e) {
       _logger.log(
         'Network PUT request failed: $e',
-        level: LogLevel.error,
-        category: SecurityCategory.security,
+        level: logger_util.LogLevel.error,
+        category: logger_util.SecurityCategory.security,
       );
       rethrow;
     }
@@ -227,8 +227,8 @@ class NetworkService {
     } catch (e) {
       _logger.log(
         'Network DELETE request failed: $e',
-        level: LogLevel.error,
-        category: SecurityCategory.security,
+        level: logger_util.LogLevel.error,
+        category: logger_util.SecurityCategory.security,
       );
       rethrow;
     }
@@ -247,7 +247,7 @@ class NetworkService {
   }) async {
     try {
       // التحقق من صحة المسار
-      if (!await _securityManager._validatePath(savePath)) {
+      if (!_validateFilePath(savePath)) {
         throw SecurityException('Invalid save path');
       }
 
@@ -276,8 +276,8 @@ class NetworkService {
     } catch (e) {
       _logger.log(
         'Download failed: $e',
-        level: LogLevel.error,
-        category: SecurityCategory.security,
+        level: logger_util.LogLevel.error,
+        category: logger_util.SecurityCategory.security,
       );
       rethrow;
     }
@@ -294,7 +294,7 @@ class NetworkService {
   }) async {
     try {
       // التحقق من صحة المسار
-      if (!await _securityManager.validatePath(filePath)) {
+      if (!_validateFilePath(filePath)) {
         throw SecurityException('Invalid file path');
       }
 
@@ -328,11 +328,24 @@ class NetworkService {
     } catch (e) {
       _logger.log(
         'Upload failed: $e',
-        level: LogLevel.error,
-        category: SecurityCategory.security,
+        level: logger_util.LogLevel.error,
+        category: logger_util.SecurityCategory.security,
       );
       rethrow;
     }
+  }
+
+  bool _validateFilePath(String filePath) {
+    // تحقق بسيط من المسار
+    if (filePath.isEmpty) return false;
+    if (filePath.contains('..')) return false;
+
+    // تحقق من الامتداد
+    final extension = path.extension(filePath).toLowerCase();
+    final allowedExtensions = ['.jpg', '.jpeg', '.png', '.pdf', '.txt'];
+    if (!allowedExtensions.contains(extension)) return false;
+
+    return true;
   }
 }
 
@@ -357,25 +370,33 @@ class NoInternetException extends NetworkException {
 }
 
 class ServerException extends NetworkException {
-  ServerException(String message, {int? statusCode}) : super(message, statusCode: statusCode);
+  ServerException(String message, {super.statusCode}) : super(message);
 }
 
 class UnauthorizedException extends NetworkException {
-  UnauthorizedException() : super('Unauthorized', statusCode: 401);
+  UnauthorizedException([String message = 'Unauthorized']) : super(message, statusCode: 401);
 }
 
 class ForbiddenException extends NetworkException {
-  ForbiddenException() : super('Forbidden', statusCode: 403);
+  ForbiddenException([String message = 'Forbidden']) : super(message, statusCode: 403);
 }
 
 class NotFoundException extends NetworkException {
-  NotFoundException() : super('Not found', statusCode: 404);
+  NotFoundException([String message = 'Not found']) : super(message, statusCode: 404);
 }
 
 class RateLimitException extends NetworkException {
-  RateLimitException() : super('Rate limit exceeded', statusCode: 429);
+  RateLimitException([String message = 'Rate limit exceeded']) : super(message, statusCode: 429);
 }
 
 class SecurityViolationException extends NetworkException {
-  SecurityViolationException(String message) : super(message);
+  SecurityViolationException(super.message);
+}
+
+class SecurityException implements Exception {
+  final String message;
+  SecurityException(this.message);
+
+  @override
+  String toString() => 'SecurityException: $message';
 }

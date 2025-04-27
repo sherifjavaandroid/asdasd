@@ -10,6 +10,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/api_constants.dart';
 import '../network/dio_client.dart';
 import '../network/network_service.dart';
+import '../network/interceptors/auth_interceptor.dart';
+import '../network/interceptors/error_interceptor.dart';
+import '../network/interceptors/logging_interceptor.dart';
+import '../network/interceptors/encryption_interceptor.dart';
+import '../network/interceptors/security_interceptor.dart';
 import '../security/security_manager.dart';
 import '../security/encryption_service.dart';
 import '../security/secure_storage_service.dart';
@@ -71,74 +76,81 @@ Future<void> init() async {
   final packageInfo = await PackageInfo.fromPlatform();
   sl.registerLazySingleton(() => packageInfo);
 
-  // Core - Network
-  sl.registerLazySingleton(() => DioClient(
-    dio: sl(),
-    interceptors: [
-      // Add interceptors as needed
-    ],
-  ));
-
-  sl.registerLazySingleton<NetworkService>(() => NetworkServiceImpl(
-    dioClient: sl(),
-    securityManager: sl(),
-  ));
-
-  sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()));
-
   // Core - Security
-  sl.registerLazySingleton(() => EncryptionService());
-  sl.registerLazySingleton(() => SecureStorageService(storage: sl()));
-  sl.registerLazySingleton(() => RootDetectionService());
-  sl.registerLazySingleton(() => SSLPinningService());
-  sl.registerLazySingleton(() => ScreenshotPreventionService());
-  sl.registerLazySingleton(() => AntiTamperingService(packageInfo: sl()));
-  sl.registerLazySingleton(() => PackageValidationService(packageInfo: sl()));
-  sl.registerLazySingleton(() => RateLimiterService());
+  sl.registerLazySingleton(() => SecureLogger());
+  sl.registerLazySingleton(() => SecureStorageService(sl()));
+  sl.registerLazySingleton(() => EncryptionService(sl(), sl()));
+  sl.registerLazySingleton(() => RootDetectionService(sl(), sl()));
+  sl.registerLazySingleton(() => EnvironmentChecker(sl()));
+  sl.registerLazySingleton(() => SSLPinningService(sl(), sl()));
+  sl.registerLazySingleton(() => ScreenshotPreventionService(sl()));
+  sl.registerLazySingleton(() => AntiTamperingService(sl(), sl(), sl()));
+  sl.registerLazySingleton(() => PackageValidationService(sl()));
+  sl.registerLazySingleton(() => RateLimiterService(sl(), sl(), sl()));
   sl.registerLazySingleton(() => NonceGeneratorService());
-  sl.registerLazySingleton(() => ObfuscationService());
+  sl.registerLazySingleton(() => ObfuscationService(sl()));
+  sl.registerLazySingleton(() => IntegrityChecker(sl()));
+  sl.registerLazySingleton(() => TimeManager());
+
   sl.registerLazySingleton(() => TokenManager(
-    secureStorage: sl(),
-    encryptionService: sl(),
+    sl(),
+    sl(),
+    sl(),
+    sl(),
   ));
 
   sl.registerLazySingleton(() => SecurityManager(
-    rootDetectionService: sl(),
-    antiTamperingService: sl(),
-    packageValidationService: sl(),
-    environmentChecker: sl(),
-    integrityChecker: sl(),
-    sslPinningService: sl(),
-    screenshotPreventionService: sl(),
-    secureLogger: sl(),
+    sl(), // EncryptionService
+    sl(), // SSLPinningService
+    sl(), // RootDetectionService
+    sl(), // ScreenshotPreventionService
+    sl(), // SecureStorageService
+    sl(), // TokenManager
+    sl(), // AntiTamperingService
+    sl(), // RateLimiterService
+    sl(), // ObfuscationService
+    sl(), // NonceGeneratorService
+    sl(), // SecureLogger
+    sl(), // IntegrityChecker
+    sl(), // TimeManager
   ));
+
+  // Core - Network
+  sl.registerLazySingleton(() => AuthInterceptor(sl(), sl(), sl()));
+  sl.registerLazySingleton(() => ErrorInterceptor(sl()));
+  sl.registerLazySingleton(() => LoggingInterceptor(sl()));
+  sl.registerLazySingleton(() => EncryptionInterceptor(sl(), sl(), sl()));
+  sl.registerLazySingleton(() => SecurityInterceptor(sl(), sl(), sl(), sl(), sl(), sl()));
+
+  sl.registerLazySingleton(() => DioClient(
+    sl(),
+    sslPinningService: sl(),
+    authInterceptor: sl(),
+    errorInterceptor: sl(),
+    loggingInterceptor: sl(),
+    encryptionInterceptor: sl(),
+    securityInterceptor: sl(),
+  ));
+
+  sl.registerLazySingleton<NetworkService>(() => NetworkService(sl(), sl(), sl()));
 
   // Core - Utils
   sl.registerLazySingleton(() => DeviceInfoService());
-  sl.registerLazySingleton(() => EnvironmentChecker());
   sl.registerLazySingleton(() => FilePathValidator());
   sl.registerLazySingleton(() => InputSanitizer());
-  sl.registerLazySingleton(() => IntegrityChecker());
   sl.registerLazySingleton(() => KeyGeneratorService());
-  sl.registerLazySingleton(() => SecureLogger(
-    obfuscationService: sl(),
-    environmentChecker: sl(),
-  ));
-  sl.registerLazySingleton(() => SessionManager(
-    secureStorage: sl(),
-    timeManager: sl(),
-  ));
-  sl.registerLazySingleton(() => TimeManager());
+  sl.registerLazySingleton(() => SessionManager(sl(), sl(), sl(), sl(), sl()));
 
   // Features - Auth
   // Data sources
   sl.registerLazySingleton<AuthLocalDataSource>(() => AuthLocalDataSourceImpl(
-    secureStorage: sl(),
-    encryptionService: sl(),
+    sl(), // secureStorage
+    sl(), // encryptionService
   ));
 
   sl.registerLazySingleton<AuthRemoteDataSource>(() => AuthRemoteDataSourceImpl(
-    networkService: sl(),
+    sl(), // networkService
+    sl(), // securityManager
   ));
 
   // Repository
@@ -169,7 +181,7 @@ Future<void> init() async {
   // Features - Home
   // Data sources
   sl.registerLazySingleton<UnsplashDataSource>(() => UnsplashDataSourceImpl(
-    networkService: sl(),
+    sl(), // networkService
   ));
 
   // Repository

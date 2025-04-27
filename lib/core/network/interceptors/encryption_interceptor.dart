@@ -1,13 +1,14 @@
 import 'dart:convert';
+import 'dart:nativewrappers/_internal/vm/lib/typed_data_patch.dart';
 import 'package:dio/dio.dart';
 import '../../security/encryption_service.dart';
 import '../../security/security_manager.dart';
-import '../../utils/secure_logger.dart';
+import '../../utils/secure_logger.dart' as logger_util;
 
 class EncryptionInterceptor extends Interceptor {
   final EncryptionService _encryptionService;
   final SecurityManager _securityManager;
-  final SecureLogger _logger;
+  final logger_util.SecureLogger _logger;
 
   // مسارات مستثناة من التشفير
   final List<String> _excludedPaths = [
@@ -53,10 +54,10 @@ class EncryptionInterceptor extends Interceptor {
     } catch (e) {
       _logger.log(
         'Encryption interceptor error: $e',
-        level: LogLevel.error,
-        category: SecurityCategory.encryption,
+        level: logger_util.LogLevel.error,
+        category: logger_util.SecurityCategory.encryption,
       );
-      handler.reject(DioError(requestOptions: options, error: e));
+      handler.reject(DioException(requestOptions: options, error: e));
     }
   }
 
@@ -76,10 +77,10 @@ class EncryptionInterceptor extends Interceptor {
     } catch (e) {
       _logger.log(
         'Decryption interceptor error: $e',
-        level: LogLevel.error,
-        category: SecurityCategory.decryption,
+        level: logger_util.LogLevel.error,
+        category: logger_util.SecurityCategory.decryption,
       );
-      handler.reject(DioError(
+      handler.reject(DioException(
         requestOptions: response.requestOptions,
         response: response,
         error: e,
@@ -107,7 +108,7 @@ class EncryptionInterceptor extends Interceptor {
     if (data == null) return {};
 
     // إنشاء nonce جديد
-    final nonce = await _encryptionService._generateSecureKey(16);
+    final nonce = await _generateNonce();
 
     // تحويل البيانات إلى JSON
     final jsonData = data is Map ? data : {'data': data};
@@ -183,6 +184,11 @@ class EncryptionInterceptor extends Interceptor {
     }
 
     return data;
+  }
+
+  Future<Uint8List> _generateNonce() async {
+    // استخدام خدمة التشفير لإنشاء nonce آمن
+    return await _encryptionService.generateIv();
   }
 }
 

@@ -9,7 +9,7 @@ class ErrorInterceptor extends Interceptor {
   ErrorInterceptor(this._logger);
 
   @override
-  void onError(DioError err, ErrorInterceptorHandler handler) {
+  void onError(DioException err, ErrorInterceptorHandler handler) {
     // معالجة الخطأ وتحويله إلى استثناء مخصص
     final customException = _handleError(err);
 
@@ -17,7 +17,7 @@ class ErrorInterceptor extends Interceptor {
     _logError(err, customException);
 
     // إرجاع الخطأ المخصص
-    handler.next(DioError(
+    handler.next(DioException(
       requestOptions: err.requestOptions,
       response: err.response,
       type: err.type,
@@ -25,20 +25,20 @@ class ErrorInterceptor extends Interceptor {
     ));
   }
 
-  Exception _handleError(DioError error) {
+  Exception _handleError(DioException error) {
     switch (error.type) {
-      case DioErrorType.connectionTimeout:
-      case DioErrorType.sendTimeout:
-      case DioErrorType.receiveTimeout:
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.sendTimeout:
+      case DioExceptionType.receiveTimeout:
         return TimeoutException();
 
-      case DioErrorType.badResponse:
+      case DioExceptionType.badResponse:
         return _handleResponseError(error);
 
-      case DioErrorType.cancel:
+      case DioExceptionType.cancel:
         return NetworkException('Request cancelled');
 
-      case DioErrorType.unknown:
+      case DioExceptionType.unknown:
         if (error.error is SocketException) {
           return NoInternetException();
         }
@@ -49,7 +49,7 @@ class ErrorInterceptor extends Interceptor {
     }
   }
 
-  Exception _handleResponseError(DioError error) {
+  Exception _handleResponseError(DioException error) {
     if (error.response?.statusCode == null) {
       return NetworkException('No response from server');
     }
@@ -94,7 +94,7 @@ class ErrorInterceptor extends Interceptor {
     }
   }
 
-  void _logError(DioError error, Exception customException) {
+  void _logError(DioException error, Exception customException) {
     final logLevel = _getLogLevel(error);
     final sanitizedRequest = _sanitizeRequest(error.requestOptions);
     final sanitizedResponse = _sanitizeResponse(error.response);
@@ -113,7 +113,7 @@ class ErrorInterceptor extends Interceptor {
     );
   }
 
-  LogLevel _getLogLevel(DioError error) {
+  LogLevel _getLogLevel(DioException error) {
     if (error.response?.statusCode == null) {
       return LogLevel.error;
     }

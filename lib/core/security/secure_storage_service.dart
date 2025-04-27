@@ -93,11 +93,11 @@ class SecureStorageService {
     return key;
   }
 
-  Future<void> saveSecureData(String key, String value, {bool encrypt = true}) async {
+  Future<void> saveSecureData(String key, String value, {bool useEncryption = true}) async {
     try {
-      if (encrypt && _encrypter != null) {
+      if (useEncryption && _encrypter != null) {
         // تشفير البيانات قبل حفظها
-        final iv = encrypt.encrypt.IV.fromSecureRandom(16);
+        final iv = encrypt.IV.fromSecureRandom(16);
         final encrypted = _encrypter!.encrypt(value, iv: iv);
 
         // دمج IV مع البيانات المشفرة

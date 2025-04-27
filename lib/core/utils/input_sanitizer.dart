@@ -10,13 +10,13 @@ class InputSanitizer {
 
     // إزالة الأحرف الخاصة الخطرة
     sanitized = sanitized
-        .replaceAll(RegExp(r'[<>{}\\\/\'\";]'), '')
+        .replaceAll(RegExp(r'[<>{}\\\'";\[\]]'), '')
         .replaceAll(RegExp(r'[\x00-\x1F\x7F]'), '') // إزالة أحرف التحكم
         .replaceAll(RegExp(r'[\u200B-\u200D\uFEFF]'), ''); // إزالة الأحرف غير المرئية
 
-    // إزالة SQL injection patterns
-    sanitized = sanitized
-        .replaceAll(RegExp(r'(--)|(;)|(\/\*)'), '')
+        // إزالة SQL injection patterns
+        sanitized = sanitized
+        .replaceAll(RegExp(r'(--)|(;)|(/\*)'), '')
         .replaceAll(RegExp(r'(union\s+select)|(select\s+\*)|(drop\s+table)', caseSensitive: false), '')
         .replaceAll(RegExp(r'(insert\s+into)|(delete\s+from)|(update\s+\w+\s+set)', caseSensitive: false), '');
 
@@ -74,7 +74,7 @@ class InputSanitizer {
 
     // التأكد من أن + موجود في البداية فقط
     if (sanitized.contains('+') && !sanitized.startsWith('+')) {
-      sanitized = sanitized.replaceAll('+', '');
+      sanitized = sanitized.replaceAll(RegExp(r'\+'), '');
     }
 
     return sanitized;
@@ -130,10 +130,10 @@ class InputSanitizer {
     String sanitized = path.trim();
 
     // منع التنقل بين المجلدات
-    sanitized = sanitized.replaceAll('..', '');
+    sanitized = sanitized.replaceAll(RegExp(r'\.\.'), '');
 
     // إزالة الأحرف غير المسموح بها
-    sanitized = sanitized.replaceAll(RegExp(r'[^a-zA-Z0-9/_.-]'), '');
+    sanitized = sanitized.replaceAll(RegExp(r'[^a-zA-Z0-9/_\.-]'), '');
 
     // تحويل المسارات المتعددة إلى مسار واحد
     sanitized = sanitized.replaceAll(RegExp(r'/+'), '/');
@@ -226,7 +226,7 @@ class InputSanitizer {
     String sanitized = query.trim();
 
     // إزالة الأحرف الخاصة للبحث
-    sanitized = sanitized.replaceAll(RegExp(r'[*?\\$^(){}|[\]]'), '');
+    sanitized = sanitized.replaceAll(RegExp(r'[*?\\$^(){}|\[\]]'), '');
 
     // تحويل إلى حروف صغيرة
     sanitized = sanitized.toLowerCase();

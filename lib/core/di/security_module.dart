@@ -14,7 +14,7 @@ import '../security/nonce_generator_service.dart';
 import '../security/package_validation_service.dart';
 import '../network/certificate_pinning/certificate_manager.dart';
 import '../network/certificate_pinning/public_key_store.dart';
-import '../utils/secure_logger.dart';
+import '../utils/secure_logger.dart' as logger_util;
 import '../utils/integrity_checker.dart';
 import '../utils/device_info_service.dart';
 import '../utils/environment_checker.dart';
@@ -50,7 +50,7 @@ class SecurityModule {
 
   static Future<void> _registerSecurityServices() async {
     // تسجيل السجل الآمن
-    sl.registerLazySingleton(() => SecureLogger());
+    sl.registerLazySingleton(() => logger_util.SecureLogger());
 
     // تسجيل خدمة معلومات الجهاز
     sl.registerLazySingleton(() => DeviceInfoService());
@@ -155,7 +155,7 @@ class SecurityModule {
 
   static Future<void> initializeSecurityServices() async {
     // تهيئة جميع الخدمات
-    final logger = sl<SecureLogger>();
+    final logger = sl<logger_util.SecureLogger>();
 
     try {
       // تهيئة التخزين الآمن
@@ -196,21 +196,21 @@ class SecurityModule {
 
       logger.log(
         'All security services initialized successfully',
-        level: LogLevel.info,
-        category: SecurityCategory.initialization,
+        level: logger_util.LogLevel.info,
+        category: logger_util.SecurityCategory.initialization,
       );
     } catch (e) {
       logger.log(
         'Security services initialization failed: $e',
-        level: LogLevel.critical,
-        category: SecurityCategory.initialization,
+        level: logger_util.LogLevel.critical,
+        category: logger_util.SecurityCategory.initialization,
       );
       rethrow;
     }
   }
 
   static Future<void> performSecurityHealthCheck() async {
-    final logger = sl<SecureLogger>();
+    final logger = sl<logger_util.SecureLogger>();
     final securityManager = sl<SecurityManager>();
     final integrityChecker = sl<IntegrityChecker>();
 
@@ -226,21 +226,21 @@ class SecurityModule {
 
       logger.log(
         'Security health check completed successfully',
-        level: LogLevel.info,
-        category: SecurityCategory.security,
+        level: logger_util.LogLevel.info,
+        category: logger_util.SecurityCategory.security,
       );
     } catch (e) {
       logger.log(
         'Security health check failed: $e',
-        level: LogLevel.critical,
-        category: SecurityCategory.security,
+        level: logger_util.LogLevel.critical,
+        category: logger_util.SecurityCategory.security,
       );
       rethrow;
     }
   }
 
   static Future<void> disposeSecurityServices() async {
-    final logger = sl<SecureLogger>();
+    final logger = sl<logger_util.SecureLogger>();
 
     try {
       // تنظيف الخدمات
@@ -251,14 +251,14 @@ class SecurityModule {
 
       logger.log(
         'Security services disposed successfully',
-        level: LogLevel.info,
-        category: SecurityCategory.security,
+        level: logger_util.LogLevel.info,
+        category: logger_util.SecurityCategory.security,
       );
     } catch (e) {
       logger.log(
         'Security services disposal failed: $e',
-        level: LogLevel.error,
-        category: SecurityCategory.security,
+        level: logger_util.LogLevel.error,
+        category: logger_util.SecurityCategory.security,
       );
       rethrow;
     }

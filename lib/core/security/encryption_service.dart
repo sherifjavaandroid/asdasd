@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:crypto/crypto.dart';
 import 'package:pointycastle/export.dart';
-import 'package:pointycastle/pointycastle.dart';
 import 'package:flutter/foundation.dart';
 import '../di/security_module.dart';
 import '../utils/secure_logger.dart';
@@ -134,7 +133,7 @@ class EncryptionService {
 
   Uint8List _generateSecureKey(int length) {
     final key = Uint8List(length);
-    _secureRandom.nextBytes(length, key);
+    _secureRandom.nextBytes(key);
     return key;
   }
 
@@ -307,6 +306,10 @@ class EncryptionService {
     }
   }
 
+  Future<Uint8List> generateIv() async {
+    return _generateSecureKey(_ivSize);
+  }
+
   String _serializeRSAPublicKey(RSAPublicKey key) {
     final params = {
       'modulus': key.modulus.toString(),
@@ -361,4 +364,12 @@ class EncryptionService {
     _rsaPublicKey = null;
     _rsaPrivateKey = null;
   }
+}
+
+class SecurityException implements Exception {
+  final String message;
+  SecurityException(this.message);
+
+  @override
+  String toString() => 'SecurityException: $message';
 }

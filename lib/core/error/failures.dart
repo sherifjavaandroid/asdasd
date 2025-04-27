@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-
 import 'exceptions.dart';
 
 // Base failure class for clean architecture
@@ -16,8 +15,7 @@ abstract class Failure extends Equatable {
 
 // Authentication Failures
 class AuthFailure extends Failure {
-  const AuthFailure(String message, {String? code, dynamic data})
-      : super(message, code: code, data: data);
+  const AuthFailure(super.message, {super.code, super.data});
 }
 
 class InvalidCredentialsFailure extends AuthFailure {
@@ -44,20 +42,18 @@ class AccountLockedFailure extends AuthFailure {
 }
 
 class BiometricAuthFailure extends AuthFailure {
-  const BiometricAuthFailure(String message) : super(message);
+  const BiometricAuthFailure(super.message);
 }
 
 // Network Failures
 class NetworkFailure extends Failure {
   final int? statusCode;
 
-  const NetworkFailure(String message, {this.statusCode, dynamic data})
-      : super(message, data: data);
+  const NetworkFailure(super.message, {this.statusCode, super.data});
 }
 
 class ServerFailure extends NetworkFailure {
-  const ServerFailure(String message, {int? statusCode})
-      : super(message, statusCode: statusCode);
+  const ServerFailure(super.message, {super.statusCode});
 }
 
 class NoInternetFailure extends NetworkFailure {
@@ -77,8 +73,7 @@ class RateLimitFailure extends NetworkFailure {
 
 // Security Failures
 class SecurityFailure extends Failure {
-  const SecurityFailure(String message, {String? code, dynamic data})
-      : super(message, code: code, data: data);
+  const SecurityFailure(super.message, {super.code, super.data});
 }
 
 class RootedDeviceFailure extends SecurityFailure {
@@ -94,20 +89,20 @@ class SSLPinningFailure extends SecurityFailure {
 }
 
 class EncryptionFailure extends SecurityFailure {
-  const EncryptionFailure(String message) : super(message);
+  const EncryptionFailure(super.message);
 }
 
 class DecryptionFailure extends SecurityFailure {
-  const DecryptionFailure(String message) : super(message);
+  const DecryptionFailure(super.message);
 }
 
 // Storage Failures
 class StorageFailure extends Failure {
-  const StorageFailure(String message) : super(message);
+  const StorageFailure(super.message);
 }
 
 class CacheFailure extends StorageFailure {
-  const CacheFailure(String message) : super(message);
+  const CacheFailure(super.message);
 }
 
 class FileNotFoundFailure extends StorageFailure {
@@ -122,12 +117,12 @@ class StorageFullFailure extends StorageFailure {
 class ValidationFailure extends Failure {
   final Map<String, List<String>>? errors;
 
-  const ValidationFailure(String message, {this.errors})
-      : super(message, data: errors);
+  const ValidationFailure(super.message, {this.errors})
+      : super(data: errors);
 }
 
 class InvalidInputFailure extends ValidationFailure {
-  const InvalidInputFailure(String field, String message)
+  InvalidInputFailure(String field, String message)
       : super(message, errors: {field: [message]});
 }
 
@@ -141,7 +136,7 @@ class PermissionFailure extends Failure {
 
 // Business Logic Failures
 class BusinessFailure extends Failure {
-  const BusinessFailure(String message) : super(message);
+  const BusinessFailure(super.message);
 }
 
 class ContentNotFoundFailure extends BusinessFailure {
@@ -154,7 +149,7 @@ class InsufficientBalanceFailure extends BusinessFailure {
 
 // Configuration Failures
 class ConfigurationFailure extends Failure {
-  const ConfigurationFailure(String message) : super(message);
+  const ConfigurationFailure(super.message);
 }
 
 class MissingConfigurationFailure extends ConfigurationFailure {
@@ -191,5 +186,5 @@ extension ExceptionToFailure on Exception {
 
 // Unknown Failures
 class UnknownFailure extends Failure {
-  const UnknownFailure(String message) : super(message);
+  const UnknownFailure(super.message);
 }
