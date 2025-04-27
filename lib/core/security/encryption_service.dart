@@ -132,10 +132,9 @@ class EncryptionService {
   }
 
   Uint8List _generateSecureKey(int length) {
-    final key = Uint8List(length);
-    _secureRandom.nextBytes(key);
-    return key;
+    return _secureRandom.nextBytes(length);
   }
+
 
   AsymmetricKeyPair<PublicKey, PrivateKey> _generateRSAKeyPair() {
     final keyParams = RSAKeyGeneratorParameters(BigInt.parse('65537'), _rsaKeySize, 64);

@@ -250,7 +250,9 @@ class SecureLogger {
     final logMessage = '$timestamp [EMERGENCY]: $message';
 
     // طباعة مباشرة
-    print(logMessage);
+    if (kDebugMode) {
+      print(logMessage);
+    }
 
     // محاولة الحفظ الفوري
     try {

@@ -1,5 +1,6 @@
 import 'dart:convert';
-import 'dart:nativewrappers/_internal/vm/lib/typed_data_patch.dart';
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 import '../../security/encryption_service.dart';
 import '../../security/security_manager.dart';
