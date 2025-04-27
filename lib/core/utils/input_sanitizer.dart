@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class InputSanitizer {
   // تنظيف المدخلات العامة
   static String sanitizeInput(String input) {

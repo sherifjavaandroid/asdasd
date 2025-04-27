@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
-import 'secure_storage_service.dart';
+
+import '../security/secure_storage_service.dart';
 
 enum LogLevel {
   debug,

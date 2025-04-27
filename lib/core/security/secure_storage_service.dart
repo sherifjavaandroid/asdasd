@@ -97,7 +97,7 @@ class SecureStorageService {
     try {
       if (encrypt && _encrypter != null) {
         // تشفير البيانات قبل حفظها
-        final iv = encrypt.IV.fromSecureRandom(16);
+        final iv = encrypt.encrypt.IV.fromSecureRandom(16);
         final encrypted = _encrypter!.encrypt(value, iv: iv);
 
         // دمج IV مع البيانات المشفرة

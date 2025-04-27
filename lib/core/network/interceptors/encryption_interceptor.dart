@@ -107,7 +107,7 @@ class EncryptionInterceptor extends Interceptor {
     if (data == null) return {};
 
     // إنشاء nonce جديد
-    final nonce = await _encryptionService.generateSecureKey(16);
+    final nonce = await _encryptionService._generateSecureKey(16);
 
     // تحويل البيانات إلى JSON
     final jsonData = data is Map ? data : {'data': data};

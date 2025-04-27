@@ -9,7 +9,7 @@ class NetworkService {
   final SecurityManager _securityManager;
   final SecureLogger _logger;
 
-  NetworkService(this._dioClient, this._securityManager);
+  NetworkService(this._dioClient, this._securityManager, this._logger);
 
   Future<T> get<T>({
     required String endpoint,
@@ -247,7 +247,7 @@ class NetworkService {
   }) async {
     try {
       // التحقق من صحة المسار
-      if (!await _securityManager.validatePath(savePath)) {
+      if (!await _securityManager._validatePath(savePath)) {
         throw SecurityException('Invalid save path');
       }
 

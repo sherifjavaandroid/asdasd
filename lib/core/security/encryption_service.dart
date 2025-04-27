@@ -6,6 +6,7 @@ import 'package:crypto/crypto.dart';
 import 'package:pointycastle/export.dart';
 import 'package:pointycastle/pointycastle.dart';
 import 'package:flutter/foundation.dart';
+import '../di/security_module.dart';
 import '../utils/secure_logger.dart';
 import 'secure_storage_service.dart';
 

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
 import '../../utils/secure_logger.dart';
 import '../../security/secure_storage_service.dart';
